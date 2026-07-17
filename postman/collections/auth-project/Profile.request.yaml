@@ -1,0 +1,10 @@
+$kind: http-request
+name: Profile
+description: ""
+url: http://127.0.0.1:5000/profile
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
+order: 3985978025629248

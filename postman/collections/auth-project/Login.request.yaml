@@ -1,0 +1,24 @@
+$kind: http-request
+name: Login
+url: http://127.0.0.1:5000/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"nitinbarfa12@gmail.com\",\r
+
+    \    \"password\": \"nb123456\"\r
+
+    }  "
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: "const res = pm.response.json();\r
+
+      pm.environment.set(\"access_token\", res.access_token);\r
+
+      pm.environment.set(\"refresh_token\", res.refresh_token);"
+    language: text/javascript
+order: 1783632328042
