@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
-
+from flask_mail import Mail, Message
 from config import Config
 from database import db
 from models import TokenBlocklist

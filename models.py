@@ -24,6 +24,11 @@ class User(db.Model):
         default="user",
         nullable=False
     )
+    is_verified = db.Column(
+        db.Boolean,
+        default=False,
+        nullable=False
+    )
 
 
 class TokenBlocklist(db.Model):
