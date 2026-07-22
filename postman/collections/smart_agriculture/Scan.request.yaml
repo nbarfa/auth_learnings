@@ -1,0 +1,29 @@
+$kind: http-request
+name: Scan
+url: http://127.0.0.1:5000/api/v1/scans
+method: POST
+body:
+  type: formdata
+  content:
+    - type: file
+      key: video
+      src:
+        - /C:/Users/purch/Downloads/tmt_video.mp4
+      description: ""
+      disabled: false
+    - type: text
+      key: latitude
+      value: "14.609"
+      description: ""
+      disabled: false
+    - type: text
+      key: longitude
+      value: "12.678"
+      description: ""
+      disabled: false
+    - type: text
+      key: timestamp
+      value: 2026-06-25T10:15:00
+      description: ""
+      disabled: false
+order: 1784716284908

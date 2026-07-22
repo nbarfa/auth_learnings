@@ -1,0 +1,21 @@
+$kind: http-request
+name: Diagnosis
+description: ""
+url: http://127.0.0.1:5000/api/v1/diagnosis
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"latitude\": 14.609,\r
+
+    \  \"longitude\": 12.678,\r
+
+    \  \"timestamp\": \"2026-06-25T10:15:00\",\r
+
+    \  \"disease_name\": \"early_blight\",\r
+
+    \  \"confidence\": 0.91\r
+
+    }"
+order: 4445835984451623

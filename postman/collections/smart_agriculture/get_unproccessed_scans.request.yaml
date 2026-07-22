@@ -1,0 +1,6 @@
+$kind: http-request
+name: get_unproccessed_scans
+description: ""
+url: http://127.0.0.1:5000/api/v1/scans/unprocessed
+method: GET
+order: 4403154332602962

@@ -1,0 +1,6 @@
+$kind: http-request
+name: show_all_scans
+description: ""
+url: http://127.0.0.1:5000/api/v1/scans
+method: GET
+order: 4415523130025334

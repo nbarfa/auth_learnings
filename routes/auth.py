@@ -1,10 +1,11 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token, get_jwt
-from flask import jsonify, request, session
 from models import User, TokenBlocklist
 from database import db 
 from werkzeug.security import generate_password_hash, check_password_hash
 from decorator import admin_required
+from flask_mail import Message
+from mail import mail
 
 auth_bp = Blueprint(
     "auth",
@@ -46,6 +47,23 @@ def register():
     )
     db.session.add(user)
     db.session.commit()
+    verification_token = create_access_token(
+        identity=str(user.id)
+
+    )
+    msg = Message(
+        subject="Email Verification",
+        recipients=[user.email]
+    )
+    msg.body = f"""
+    Hello {user.username},
+    
+    Please verify your email by clicking the link below:
+    http://localhost:5000/verify-email?token={verification_token}
+    """
+
+    mail.send(msg)
+    
 
     return jsonify(
         {

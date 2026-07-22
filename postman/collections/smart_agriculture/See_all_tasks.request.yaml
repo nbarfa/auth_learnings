@@ -1,0 +1,6 @@
+$kind: http-request
+name: See_all_tasks
+description: ""
+url: http://127.0.0.1:5000/api/v1/tasks
+method: GET
+order: 4503572011810694

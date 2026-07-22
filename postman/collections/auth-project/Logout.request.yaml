@@ -1,4 +1,9 @@
 $kind: http-request
-url: ""
-method: GET
+name: Logout
+url: http://127.0.0.1:5000/logout
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
 order: 4379807569269345

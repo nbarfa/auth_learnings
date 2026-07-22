@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from flask_mail import Message
 from mail import mail
 from config import Config
 from database import db

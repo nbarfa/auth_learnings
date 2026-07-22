@@ -1,0 +1,8 @@
+$kind: http-request
+description: ""
+url: http://127.0.0.1:5000/api/v1/tasks/1/complete
+method: PATCH
+body:
+  type: json
+  content: ""
+order: 4503538639039850
