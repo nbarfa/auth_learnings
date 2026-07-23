@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token, get_jwt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token, get_jwt, decode_token
 from models import User, TokenBlocklist
 from database import db 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -59,17 +59,28 @@ def register():
     Hello {user.username},
     
     Please verify your email by clicking the link below:
-    http://localhost:5000/verify-email?token={verification_token}
+    http://localhost:5000/verify/{verification_token}
     """
 
-    mail.send(msg)
+    try:
+        mail.send(msg)
+            
+        
+        return jsonify(
+                {
+                    "message": "Registration successful. Please check your email for verification link."
+                }
+            ), 201
+    except Exception as e:
+        print(e)
+        return jsonify(
+            {
+                "message": "Failed to send verification email. Request new verification link."
+            }
+        )
+    
     
 
-    return jsonify(
-        {
-            "message": "register enpoint working"
-        }
-    )
 @auth_bp.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
@@ -93,6 +104,42 @@ def refresh():
         }
     ), 200
 
+@auth_bp.route("/verify/<verification_token>", methods=["GET"])
+def verify_email(verification_token):
+    try:
+        decoded_token = decode_token(verification_token)
+        user_id = decoded_token["sub"]
+        user = User.query.get(int(user_id))
+        user.is_verified = True
+        db.session.commit()
+
+        return jsonify(
+            {
+                "message": "Email verified successfully. You can now log in."
+            }
+        ), 200
+        
+    except Exception as e:
+        print(e)
+
+        return jsonify(
+            {
+                "message": "Invalid or expired verification token"
+            }
+        )
+
+    if user is None:
+        return jsonify(
+            {
+                "message": "user not found"
+            }
+        ), 404
+    if user.is_verified:
+        return jsonify(
+            {
+                "message": "Email already verified"
+            }
+        ), 200
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -120,6 +167,12 @@ def login():
                 "message": "Invalid email or password"
             }
         ), 401
+    if not user.is_verified:
+        return jsonify(
+            {
+                "message": "Please verify your email before logging in."
+            }
+        ), 403
     
     access_token = create_access_token(
         identity=str(user.id)
