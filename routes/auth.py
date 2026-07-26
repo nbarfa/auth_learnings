@@ -129,6 +129,12 @@ def verify_email(verification_token):
 def resend_verfication_email():
     data = request.get_json()
     email = data.get("email")
+    if not email:
+        return jsonify(
+            {
+                "message": "Email is required"
+            }
+        ), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -162,6 +168,12 @@ def resend_verfication_email():
 def forget_password():
     data = request.get_json()
     email = data.get("email")
+    if not email:
+        return jsonify(
+            {
+                "message": "Email is required"
+            }
+        ), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
@@ -169,7 +181,10 @@ def forget_password():
             {
                 "message": "If an account with this email exists, a password reset email has been sent."
             }
-        )
+        ), 404
+
+    
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():

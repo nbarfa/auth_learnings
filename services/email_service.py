@@ -19,3 +19,6 @@ def send_verfication_email(user):
     Thank you for registering
     """
     mail.send(msg)
+
+def forget_password_email(user):
+    pass
