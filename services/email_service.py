@@ -1,13 +1,13 @@
 from flask_jwt_extended import create_access_token
 from mail import mail
-from flask_mail import Messages
+from flask_mail import Message
 
 def send_verfication_email(user):
     verification_token = create_access_token(
         identity=user.id,
     )
 
-    msg = Messages(
+    msg = Message(
         subject="Verify your email",
         recipients=[user.email]
     )

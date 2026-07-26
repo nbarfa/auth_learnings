@@ -126,6 +126,38 @@ def verify_email(verification_token):
             }
         ), 200
 
+@auth_bp.route("/resend-verifcation-email", methods=["POST"])
+def resend_verfication_email():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify(
+            {
+                "message": "user not found"
+            }
+        ), 404
+    if user.is_verified:
+        return jsonify(
+            {
+                "message": "EMail already verified. You can log in."
+            }
+        ), 400
+    try:
+        send_verfication_email(user)
+        return jsonify(
+            {
+                "message": "Verification email resent successfully. Please check your email to verify your account."
+            }
+        ), 200
+    except Exception as e:
+        print(e)
+        return jsonify(
+            {
+                "message": "Failed to resend verification email. Please try again."
+            }
+        ), 400
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
