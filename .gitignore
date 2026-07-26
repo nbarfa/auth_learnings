@@ -24,3 +24,5 @@ Thumbs.db
 .postman/
 postman/enviroments/
 auth-local-1.environment.yaml
+
+config.py

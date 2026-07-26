@@ -95,6 +95,18 @@ def verify_email(verification_token):
         decoded_token = decode_token(verification_token)
         user_id = decoded_token["sub"]
         user = User.query.get(int(user_id))
+        if user is None:
+                return jsonify(
+                    {
+                        "message": "user not found"
+                    }
+                ), 404
+        if user.is_verified:
+            return jsonify(
+                {
+                    "message": "Email already verified"
+                }
+            ), 200
         user.is_verified = True
         db.session.commit()
 
@@ -111,22 +123,9 @@ def verify_email(verification_token):
             {
                 "message": "Invalid or expired verification token"
             }
-        )
+        ), 400
 
-    if user is None:
-        return jsonify(
-            {
-                "message": "user not found"
-            }
-        ), 404
-    if user.is_verified:
-        return jsonify(
-            {
-                "message": "Email already verified"
-            }
-        ), 200
-
-@auth_bp.route("/resend-verifcation-email", methods=["POST"])
+@auth_bp.route("/resend-verfication-email", methods=["POST"])
 def resend_verfication_email():
     data = request.get_json()
     email = data.get("email")

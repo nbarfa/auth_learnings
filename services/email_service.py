@@ -4,7 +4,7 @@ from flask_mail import Message
 
 def send_verfication_email(user):
     verification_token = create_access_token(
-        identity=user.id,
+        identity=str(user.id)
     )
 
     msg = Message(

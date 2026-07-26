@@ -1,0 +1,5 @@
+$kind: http-request
+name: test_request
+url: https://postman-echo.com/get
+method: GET
+order: 1785072604002

@@ -24,3 +24,5 @@ def admin_required():
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+

@@ -41,3 +41,4 @@ class TokenBlocklist(db.Model):
         nullable=False,
         unique=True
     )
+
