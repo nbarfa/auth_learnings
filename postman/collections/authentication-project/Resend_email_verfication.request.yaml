@@ -1,0 +1,13 @@
+$kind: http-request
+name: Resend_email_verfication
+description: ""
+url: http://127.0.0.1:5000/resend-verfication-email
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"nitinbarfa260@gmail.com\"\r
+
+    }"
+order: 4476759785024906

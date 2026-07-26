@@ -98,7 +98,7 @@ def verify_email(verification_token):
         if user is None:
                 return jsonify(
                     {
-                        "message": "user not found"
+                        "message": "If the account exists and is not yet verified, a verification email has been sent."
                     }
                 ), 404
         if user.is_verified:
@@ -134,7 +134,7 @@ def resend_verfication_email():
     if not user:
         return jsonify(
             {
-                "message": "user not found"
+                "message": "If the account exists and is not yet verified, a verification email has been sent."
             }
         ), 404
     if user.is_verified:
@@ -157,6 +157,19 @@ def resend_verfication_email():
                 "message": "Failed to resend verification email. Please try again."
             }
         ), 400
+
+@auth_bp.route("/forget-password", methods=["POST"])
+def forget_password():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify(
+            {
+                "message": "If an account with this email exists, a password reset email has been sent."
+            }
+        )
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
