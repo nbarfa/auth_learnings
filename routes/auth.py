@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from decorator import admin_required
 from flask_mail import Message
 from mail import mail
+from services.email_service import send_verfication_email
 
 auth_bp = Blueprint(
     "auth",
@@ -47,38 +48,22 @@ def register():
     )
     db.session.add(user)
     db.session.commit()
-    verification_token = create_access_token(
-        identity=str(user.id)
-
-    )
-    msg = Message(
-        subject="Email Verification",
-        recipients=[user.email]
-    )
-    msg.body = f"""
-    Hello {user.username},
-    
-    Please verify your email by clicking the link below:
-    http://localhost:5000/verify/{verification_token}
-    """
-
     try:
-        mail.send(msg)
-            
-        
+        send_verfication_email(user)
         return jsonify(
-                {
-                    "message": "Registration successful. Please check your email for verification link."
-                }
-            ), 201
+            {
+                "message": "User registered successfully. Please check your email to verify your account."
+            }
+        ), 201
     except Exception as e:
         print(e)
         return jsonify(
             {
-                "message": "Failed to send verification email. Request new verification link."
+                "message": "Failed to send verification email. Please resend verifcation email."
             }
-        )
+        ), 400
     
+
     
 
 @auth_bp.route("/refresh", methods=["POST"])

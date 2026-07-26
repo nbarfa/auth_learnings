@@ -6,9 +6,9 @@ body:
   type: json
   content: "{\r
 
-    \    \"email\": \"nitinbarfa12@gmail.com\",\r
+    \    \"email\": \"nitinbarfa52@gmail.com\",\r
 
-    \    \"password\": \"nb123456\"\r
+    \    \"password\": \"nitin123\"\r
 
     }  "
 auth:
