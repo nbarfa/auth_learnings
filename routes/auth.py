@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from decorator import admin_required
 from flask_mail import Message
 from mail import mail
-from services.email_service import send_verfication_email
+from services.email_service import send_verification_email, send_reset_password_email
 
 auth_bp = Blueprint(
     "auth",
@@ -49,7 +49,7 @@ def register():
     db.session.add(user)
     db.session.commit()
     try:
-        send_verfication_email(user)
+        send_verification_email(user)
         return jsonify(
             {
                 "message": "User registered successfully. Please check your email to verify your account."
@@ -150,7 +150,7 @@ def resend_verfication_email():
             }
         ), 400
     try:
-        send_verfication_email(user)
+        send_verification_email(user)
         return jsonify(
             {
                 "message": "Verification email resent successfully. Please check your email to verify your account."
@@ -182,9 +182,68 @@ def forget_password():
                 "message": "If an account with this email exists, a password reset email has been sent."
             }
         ), 404
+    if user.is_verified == False:
+        return jsonify(
+            {
+                "message": "Please verify your email before resetting your password."
+            }
+        ), 403
+    try:
+        send_reset_password_email(user)
+        return jsonify(
+            {
+                "message": "Password reset email sent successfully. Please check your email to reset your password."
+            }
+        ), 200
+    except Exception as e:
+        print(e)
+        return jsonify(
+            {
+                "message": "Failed to send password reset email. Please try again."
+            }
+        ), 400
 
-    
-
+@auth_bp.route("/reset-password/<reset_token>", methods=["POST"])
+def reset_password(reset_token):
+    try:
+        decoded_token = decode_token(reset_token)
+        user_id = decoded_token["sub"]
+        if decoded_token["purpose"] != "password_reset":
+            return jsonify(
+                {
+                    "message": "Invalid token."
+                }
+            ), 400
+        user = User.query.get(int(user_id))
+        if user is None:
+            return jsonify(
+                {
+                    "message": "User not found"
+                }
+            ), 404
+        data = request.get_json()
+        new_password = data.get("new_password")
+        if not new_password:
+            return jsonify(
+                {
+                    "message": "Please provide a new password."
+                }
+            ), 400
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        return jsonify(
+            {
+                "message": "Password reset successfully. You can now log in with your new password."
+            }
+        ), 200
+    except Exception as e:
+        print(e)
+        return jsonify(
+            {
+                "message": "Invalid or expired token. "
+            }
+        ), 400
+        
 
 @auth_bp.route("/login", methods=["POST"])
 def login():

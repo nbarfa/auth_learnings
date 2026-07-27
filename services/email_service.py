@@ -2,9 +2,10 @@ from flask_jwt_extended import create_access_token
 from mail import mail
 from flask_mail import Message
 
-def send_verfication_email(user):
+def send_verification_email(user):
     verification_token = create_access_token(
-        identity=str(user.id)
+        identity=str(user.id),
+        additional_claims={"purpose": "email_verification"}
     )
 
     msg = Message(
@@ -20,5 +21,22 @@ def send_verfication_email(user):
     """
     mail.send(msg)
 
-def forget_password_email(user):
-    pass
+def send_reset_password_email(user):
+    reset_token = create_access_token(
+        identity=str(user.id),
+        additional_claims={"purpose": "password_reset"}
+    )
+
+    msg = Message(
+        subject="Reset Your Password",
+        recipients=[user.email]
+    )
+    msg.body = f"""
+    Hello {user.username},
+    You requested a password reset. Please click the link below to reset your password:
+    http://localhost:5000/reset-password/{reset_token}
+    
+    If you did not request this, please ignore this email.
+    Thank You for using our service.
+    """
+    mail.send(msg)
