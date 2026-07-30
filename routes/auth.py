@@ -9,15 +9,19 @@ from mail import mail
 from services.email_service import send_verification_email, send_reset_password_email
 from schema.auth_schema import RegisterSchema
 from marshmallow import ValidationError
+import traceback
 
 auth_bp = Blueprint(
     "auth",
     __name__
 )
-register_schema = RegisterSchema
+register_schema = RegisterSchema()
 @auth_bp.route("/register", methods=["POST"])
 def register():
     try:
+        # print(register_schema)
+        # print(type(register_schema))
+        # print(request.get_json())
         data = register_schema.load(request.get_json())
         existing_user = User.query.filter_by(email=data["email"]).first()
         if existing_user:
@@ -46,12 +50,13 @@ def register():
         return jsonify(err.messages), 400
 
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         return jsonify(
             {
                 "message": "Faild to send verification email. Please resend verification email."
             }
         ), 400
+
 
 
 @auth_bp.route("/refresh", methods=["POST"])
