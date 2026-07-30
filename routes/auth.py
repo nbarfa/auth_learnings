@@ -7,64 +7,52 @@ from decorator import admin_required
 from flask_mail import Message
 from mail import mail
 from services.email_service import send_verification_email, send_reset_password_email
+from schema.auth_schema import RegisterSchema
+from marshmallow import ValidationError
 
 auth_bp = Blueprint(
     "auth",
     __name__
 )
-
+register_schema = RegisterSchema
 @auth_bp.route("/register", methods=["POST"])
 def register():
-
-    data = request.get_json()
-
-    username = data.get("username")
-    email = data.get("email")
-    password = data.get("password")
-
-    if not username or not email or not password:
-        return jsonify(
-            {
-                "message": "All fields are requried"
-            }
-        ), 400
-
-    existing_user = User.query.filter_by(
-        email=email
-    ).first()
-
-    if existing_user:
-        return jsonify(
-            {
-                "message": "email already exist"
-            }
-        )
-    
-    hashed_password = generate_password_hash(password)
-    user = User(
-        username=username,
-        email=email,
-        password_hash=hashed_password
-    )
-    db.session.add(user)
-    db.session.commit()
     try:
+        data = register_schema.load(request.get_json())
+        existing_user = User.query.filter_by(email=data["email"]).first()
+        if existing_user:
+            return jsonify(
+                {
+                        "message": "Email already exist."
+                }
+            ), 400
+        hash_password = generate_password_hash(data['password'])
+        user = User(
+            usrname=data['username'],
+            email=data['email'],
+            password=hash_password
+        )
+        db.session.add(user)
+        db.session.commit()
+
         send_verification_email(user)
+
         return jsonify(
             {
-                "message": "User registered successfully. Please check your email to verify your account."
+                "message": "user registered successfully. Check your email to verify your account."
             }
-        ), 201
+        ), 200
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
     except Exception as e:
         print(e)
         return jsonify(
             {
-                "message": "Failed to send verification email. Please resend verifcation email."
+                "message": "Faild to send verification email. Please resend verification email."
             }
         ), 400
-    
 
-    
 
 @auth_bp.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
