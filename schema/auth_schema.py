@@ -7,7 +7,7 @@ class RegisterSchema(Schema):
             validate.Length(min=3, max=20),
             validate.Regexp(r"^[A-Za-z0-9_]+$")
         ]
-        )
+    )
 
     email = fields.Email(required=True)
 
