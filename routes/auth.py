@@ -7,6 +7,7 @@ from decorator import admin_required
 from flask_mail import Message
 from mail import mail
 from services.email_service import send_verification_email, send_reset_password_email
+from services.auth_service import register_user
 from schema.auth_schema import RegisterSchema
 from marshmallow import ValidationError
 import traceback
@@ -19,33 +20,20 @@ register_schema = RegisterSchema()
 @auth_bp.route("/register", methods=["POST"])
 def register():
     try:
-        # print(register_schema)
-        # print(type(register_schema))
-        # print(request.get_json())
         data = register_schema.load(request.get_json())
-        existing_user = User.query.filter_by(email=data["email"]).first()
-        if existing_user:
+        user = register_user(data)
+        if user is None:
             return jsonify(
                 {
-                        "message": "Email already exist."
+                    "message": "User with this email already exists."
                 }
             ), 400
-        hash_password = generate_password_hash(data['password'])
-        user = User(
-            usrname=data['username'],
-            email=data['email'],
-            password=hash_password
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        send_verification_email(user)
 
         return jsonify(
             {
                 "message": "user registered successfully. Check your email to verify your account."
             }
-        ), 200
+        ), 201
     except ValidationError as err:
         return jsonify(err.messages), 400
 
@@ -53,7 +41,7 @@ def register():
         traceback.print_exc()
         return jsonify(
             {
-                "message": "Faild to send verification email. Please resend verification email."
+                "message": "Something went wrong."
             }
         ), 400
 
