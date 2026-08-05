@@ -32,4 +32,13 @@ class RegisterSchema(Schema):
         if data["password"] != data["confirm_password"]:
             raise ValidationError("Password and confirm password do not match.", field_name="confirm_password")
 
-    
+
+class LoginSchema(Schema):
+    email = fields.Email(required=True)
+    password = fields.Str(
+        required=True,
+        validate=[
+            validate.Length(min=8),
+            validate.Regexp(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$")
+        ]
+    )

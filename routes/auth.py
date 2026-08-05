@@ -7,8 +7,8 @@ from decorator import admin_required
 from flask_mail import Message
 from mail import mail
 from services.email_service import send_verification_email, send_reset_password_email
-from services.auth_service import register_user
-from schema.auth_schema import RegisterSchema
+from services.auth_service import register_user, login_user
+from schema.auth_schema import RegisterSchema, LoginSchema
 from marshmallow import ValidationError
 import traceback
 
@@ -225,53 +225,26 @@ def reset_password(reset_token):
             }
         ), 400
         
-
+login_schema = LoginSchema()
 @auth_bp.route("/login", methods=["POST"])
 def login():
-
-    data = request.get_json()
-    email = data.get("email")
-    password = data.get("password")
-
-    if not email or not password:
+    try:
+        data = login_schema.load(request.get_json())
+        result = login_user(data)
+        if not result["success"]:
+            return jsonify(
+                {
+                    "message": result["message"]
+                }
+            ), 400
         return jsonify(
             {
-                "message": "Invalid Email or password"
+                "message": result["message"]
             }
-        ), 400
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({
-            "message": "Invalid email or password"
-        }), 401
-        
-    if not check_password_hash(user.password_hash, password):
-        return jsonify(
-            {
-                "message": "Invalid email or password"
-            }
-        ), 401
-    if not user.is_verified:
-        return jsonify(
-            {
-                "message": "Please verify your email before logging in."
-            }
-        ), 403
+        ), 200
+    except ValidationError as err:
+        return jsonify(err.messages), 400
     
-    access_token = create_access_token(
-        identity=str(user.id)
-    )
-    refresh_token = create_refresh_token(
-        identity=str(user.id)
-    )
-
-    return jsonify(
-        {
-            "message": "Login Successfull",
-            "access_token": access_token,
-            "refresh_token": refresh_token
-        }
-    ), 200
 
 @auth_bp.route("/profile", methods=["GET"])
 @jwt_required()

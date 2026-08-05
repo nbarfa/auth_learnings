@@ -1,7 +1,8 @@
 from database import db
 from models import User
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from services.email_service import send_verification_email
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 def register_user(data):
     existing_user = User.query.filter_by(email=data["email"]).first()
@@ -26,13 +27,30 @@ def register_user(data):
 def login_user(data):
     user = User.query.filter_by(email=data["email"]).first()
     if user is None:
-        return None
+        return {
+            "success": False,
+            "message": "User not found."
+        }
 
     if not user.is_verified:
-        return None
+        return {
+            "success": False,
+            "message": "Email not verified."
+        }
 
-    
-        
+    if not check_password_hash(user.password_hash, data["password"]):
+        return {
+            "success": False,
+            "message": "Invalid password."
+        }
 
+    access_token = create_access_token(identity=str(user.id))
+    refresh_token = create_refresh_token(identity=str(user.id))
+    return {
+        "success": True,
+        "message": "Login successful.",
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    }
 
 
