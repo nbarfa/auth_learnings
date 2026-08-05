@@ -7,7 +7,7 @@ from decorator import admin_required
 from flask_mail import Message
 from mail import mail
 from services.email_service import send_verification_email, send_reset_password_email
-from services.auth_service import register_user, login_user
+from services.auth_service import register_user, login_user, get_user_profile, verify_email, resend_verification_email
 from schema.auth_schema import RegisterSchema, LoginSchema
 from marshmallow import ValidationError
 import traceback
@@ -75,25 +75,17 @@ def verify_email(verification_token):
     try:
         decoded_token = decode_token(verification_token)
         user_id = decoded_token["sub"]
-        user = User.query.get(int(user_id))
-        if user is None:
-                return jsonify(
-                    {
-                        "message": "If the account exists and is not yet verified, a verification email has been sent."
-                    }
-                ), 404
-        if user.is_verified:
+        verify_user = verify_email(user_id)
+        if not verify_user["success"]:
             return jsonify(
                 {
-                    "message": "Email already verified"
+                    "message": verify_user["message"]
                 }
-            ), 200
-        user.is_verified = True
-        db.session.commit()
+            ), 400
 
         return jsonify(
             {
-                "message": "Email verified successfully. You can now log in."
+                "message": verify_user["message"]
             }
         ), 200
         
@@ -116,34 +108,19 @@ def resend_verfication_email():
                 "message": "Email is required"
             }
         ), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
+    resend_email = resend_verification_email(email)
+    
+    if not resend_email["success"]:
         return jsonify(
             {
-                "message": "If the account exists and is not yet verified, a verification email has been sent."
+                "message": resend_email["message"]
             }
         ), 404
-    if user.is_verified:
-        return jsonify(
-            {
-                "message": "EMail already verified. You can log in."
-            }
-        ), 400
-    try:
-        send_verification_email(user)
-        return jsonify(
-            {
-                "message": "Verification email resent successfully. Please check your email to verify your account."
-            }
-        ), 200
-    except Exception as e:
-        print(e)
-        return jsonify(
-            {
-                "message": "Failed to resend verification email. Please try again."
-            }
-        ), 400
+    return jsonify(
+        {
+            "message": resend_email["message"]
+        }
+    ), 200
 
 @auth_bp.route("/forget-password", methods=["POST"])
 def forget_password():
@@ -257,20 +234,13 @@ def profile():
                 "message": "Plz login frist"
             }
         ), 401
-    
-    user = User.query.get(int(user_id))
-    if not user:
-        return jsonify(
-            {
-                "message": "User not found"
-            }
-        ), 404
+    user_profile = get_user_profile(user_id)
     return jsonify(
         {
             "message": "Your Profile",
-            "id": user.id,
-            "username": user.username,
-            "email": user.email
+            "id": user_profile.id,
+            "username": user_profile.username,
+            "email": user_profile.email
         }
     ), 200
 

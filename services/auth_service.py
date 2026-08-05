@@ -60,3 +60,42 @@ def get_user_profile(user_id):
     return user
 
 
+def verify_user_email(token):
+    user = User.email_verification_token(token)
+    if not user:
+        return {
+            "success": False,
+            "message": "Invalid or expired token."
+        }
+    if user.is_verified:
+        return {
+            "success": False,
+            "message": "Email already verified."
+        }
+    
+    user.is_verified = True
+    db.session.commit()
+    return {
+        "success": True,
+        "message": "Email verified successfully."
+    }
+
+def resend_verfication_email(email):
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return {
+            "success": False,
+            "message": "User not found."
+        }
+    if user.is_verified:
+        return {
+            "success": False,
+            "message": "Email not verified. Please verify your email first."
+        }
+
+    send_verification_email(user)
+
+    return {
+        "success": True,
+        "message": "verification email sent successfully."
+    }
