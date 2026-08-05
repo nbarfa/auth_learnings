@@ -53,4 +53,10 @@ def login_user(data):
         "refresh_token": refresh_token
     }
 
+def get_user_profile(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return None
+    return user
+
 
